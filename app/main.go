@@ -14,9 +14,10 @@ func main() {
 		fmt.Fprintln(os.Stderr, "error reading input:", err)
 		os.Exit(1)
 	}
-	if strings.ToUpper(cmd[:len(cmd)-1]) == "EXIT" {
+	cmd = cmd[:len(cmd)-1]
+	if strings.ToUpper(cmd) == "EXIT" {
 		os.Exit(0)
 	}
-	fmt.Print(cmd[:len(cmd)-1] + ": command not found\n")
+	fmt.Print(cmd + ": command not found\n")
 	main()
 }
