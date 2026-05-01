@@ -15,7 +15,7 @@ func main() {
 		os.Exit(1)
 	}
 	line = line[:len(line)-1]
-	args := strings.Split(line, "")
+	args := strings.Split(line, " ")
 	cmd := args[0]
 	switch strings.ToUpper(cmd) {
 	case "EXIT":
