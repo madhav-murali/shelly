@@ -13,6 +13,6 @@ func main() {
 		fmt.Fprintln(os.Stderr, "error reading input:", err)
 		return
 	}
-	fmt.Print(cmd[:len(cmd)-1] + ": command not found")
+	fmt.Print(cmd[:len(cmd)-1] + ": command not found\n")
 	main()
 }
