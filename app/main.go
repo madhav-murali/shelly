@@ -12,7 +12,7 @@ func main() {
 		fmt.Print("$ ")
 		for scanner.Scan() {
 			line := scanner.Text()
-			fmt.Printf("%s: command not found\n", line)
+			fmt.Printf("$ %s: command not found\n", line)
 		}
 	}
 }
