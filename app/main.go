@@ -21,7 +21,10 @@ func main() {
 	case "EXIT":
 		os.Exit(0)
 	case "ECHO":
-		fmt.Println(args[1:])
+		for i := 1; i < len(args); i++ {
+			fmt.Print(args[i])
+		}
+		fmt.Print("\n")
 	default:
 		fmt.Print(cmd + ": command not found\n")
 	}
