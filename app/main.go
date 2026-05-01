@@ -23,6 +23,9 @@ func main() {
 	case "ECHO":
 		for i := 1; i < len(args); i++ {
 			fmt.Print(args[i])
+			if i != len(args)-1 {
+				fmt.Print(" ")
+			}
 		}
 		fmt.Print("\n")
 	default:
