@@ -35,9 +35,9 @@ func main() {
 		fmt.Print("\n")
 	case "TYPE":
 		if validCmds.Find(strings.ToUpper(args[1])) {
-			fmt.Printf("%s is a shell builtin", args[1])
+			fmt.Printf("%s is a shell builtin\n", args[1])
 		} else {
-			fmt.Printf("%s: not found", args[1])
+			fmt.Printf("%s: not found\n", args[1])
 		}
 	default:
 		fmt.Print(cmd + ": command not found\n")
