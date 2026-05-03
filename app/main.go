@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	set "github.com/codecrafters-io/shell-starter-go/internal/custom"
 )
 
 func main() {
@@ -14,6 +16,9 @@ func main() {
 		fmt.Fprintln(os.Stderr, "error reading input:", err)
 		os.Exit(1)
 	}
+	validCmds := set.NewCmdSet()
+	validCmds.Add("EXIT")
+	validCmds.Add("ECHO")
 	line = line[:len(line)-1]
 	args := strings.Split(line, " ")
 	cmd := args[0]
@@ -28,6 +33,12 @@ func main() {
 			}
 		}
 		fmt.Print("\n")
+	case "TYPE":
+		if validCmds.Find(strings.ToUpper(args[1])) {
+			fmt.Printf("%s is a shell builtin", args[1])
+		} else {
+			fmt.Printf("%s: not found", args[1])
+		}
 	default:
 		fmt.Print(cmd + ": command not found\n")
 	}
