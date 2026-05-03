@@ -19,6 +19,7 @@ func main() {
 	validCmds := set.NewCmdSet()
 	validCmds.Add("EXIT")
 	validCmds.Add("ECHO")
+	validCmds.Add("TYPE")
 	line = line[:len(line)-1]
 	args := strings.Split(line, " ")
 	cmd := args[0]
