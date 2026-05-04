@@ -4,9 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 
-	set "github.com/codecrafters-io/shell-starter-go/internal/custom"
+	customDS "github.com/codecrafters-io/shell-starter-go/internal/custom"
 )
 
 func main() {
@@ -16,7 +17,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "error reading input:", err)
 		os.Exit(1)
 	}
-	validCmds := set.NewCmdSet()
+	validCmds := customDS.NewCmdSet()
 	validCmds.Add("EXIT")
 	validCmds.Add("ECHO")
 	validCmds.Add("TYPE")
@@ -38,8 +39,16 @@ func main() {
 		if validCmds.Find(strings.ToUpper(args[1])) {
 			fmt.Printf("%s is a shell builtin\n", args[1])
 		} else {
-			fmt.Printf("%s: not found\n", args[1])
+			path, err := exec.LookPath(args[1])
+			if err != nil {
+				fmt.Printf("%s: not found\n", args[1])
+			}
+			fmt.Printf("%s is %s", args[1], path)
 		}
+		// path, err := exec.LookPath(args[1])
+		// if err != nil {
+
+		// }
 	default:
 		fmt.Print(cmd + ": command not found\n")
 	}
