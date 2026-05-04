@@ -43,7 +43,7 @@ func main() {
 			if err != nil {
 				fmt.Printf("%s: not found\n", args[1])
 			}
-			fmt.Printf("%s is %s", args[1], path)
+			fmt.Printf("%s is %s\n", args[1], path)
 		}
 		// path, err := exec.LookPath(args[1])
 		// if err != nil {
