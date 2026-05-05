@@ -32,6 +32,7 @@ func main() {
 	validCmds.Add("EXIT")
 	validCmds.Add("ECHO")
 	validCmds.Add("TYPE")
+	validCmds.Add("PWD")
 
 	args := strings.Split(line, " ")
 	cmd := args[0]
