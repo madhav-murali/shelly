@@ -13,7 +13,7 @@ import (
 func runCmd(name string, args ...string) {
 	cmd := exec.Command(name, args...)
 	out, _ := cmd.CombinedOutput()
-	fmt.Println(string(out))
+	fmt.Print(string(out))
 }
 
 func main() {
