@@ -57,6 +57,8 @@ func main() {
 			}
 			fmt.Printf("%s is %s\n", args[1], path)
 		}
+	case "PWD":
+		runCmd(args[0])
 	default:
 		_, err := exec.LookPath(args[0])
 		if err != nil {
