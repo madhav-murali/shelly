@@ -33,6 +33,7 @@ func main() {
 	validCmds.Add("ECHO")
 	validCmds.Add("TYPE")
 	validCmds.Add("PWD")
+	validCmds.Add("CD")
 
 	args := strings.Split(line, " ")
 	cmd := args[0]
@@ -65,6 +66,12 @@ func main() {
 			break
 		}
 		fmt.Println(dir)
+	case "CD":
+		err := os.Chdir(args[1])
+		if err != nil {
+			fmt.Printf("cd: %s does not exist", args[1])
+			break
+		}
 	default:
 		_, err := exec.LookPath(args[0])
 		if err != nil {
