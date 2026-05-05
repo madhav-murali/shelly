@@ -13,7 +13,7 @@ import (
 func runCmd(name string, args ...string) {
 	cmd := exec.Command(name, args...)
 	out, _ := cmd.CombinedOutput()
-	fmt.Print(string(out), "\n")
+	fmt.Print(string(out))
 }
 
 func main() {
@@ -58,13 +58,7 @@ func main() {
 			fmt.Printf("%s is %s\n", args[1], path)
 		}
 	default:
-		// path, err := exec.LookPath(args[0])
-		// if err != nil {
-		// 	fmt.Print(cmd + ": command not found\n")
-		// 	break
-		// }
 		runCmd(args[0], args[1:]...)
-		// fmt.Print("\n")
 	}
 	main()
 }
