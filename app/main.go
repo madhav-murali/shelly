@@ -12,7 +12,7 @@ import (
 
 func runCmd(name string, args ...string) {
 	cmd := exec.Command(name, args...)
-	out, _ := cmd.CombinedOutput()
+	out, _ := cmd.Output()
 	fmt.Println(string(out))
 }
 
