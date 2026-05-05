@@ -64,6 +64,7 @@ func main() {
 		// 	break
 		// }
 		runCmd(args[0], args[1:]...)
+		fmt.Print("\n")
 	}
 	main()
 }
