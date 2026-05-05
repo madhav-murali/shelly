@@ -10,8 +10,8 @@ import (
 	customDS "github.com/codecrafters-io/shell-starter-go/internal/custom"
 )
 
-func runCmd(name string) {
-	cmd := exec.Command(name)
+func runCmd(name string, args ...string) {
+	cmd := exec.Command(name, args...)
 	out, _ := cmd.CombinedOutput()
 	fmt.Println(string(out))
 }
@@ -23,11 +23,16 @@ func main() {
 		fmt.Fprintln(os.Stderr, "error reading input:", err)
 		os.Exit(1)
 	}
+	line = line[:len(line)-1]
+	if len(line) == 0 {
+		main()
+	}
+
 	validCmds := customDS.NewCmdSet()
 	validCmds.Add("EXIT")
 	validCmds.Add("ECHO")
 	validCmds.Add("TYPE")
-	line = line[:len(line)-1]
+
 	args := strings.Split(line, " ")
 	cmd := args[0]
 	switch strings.ToUpper(cmd) {
@@ -53,11 +58,12 @@ func main() {
 			fmt.Printf("%s is %s\n", args[1], path)
 		}
 	default:
-		path, err := exec.LookPath(args[1])
+		path, err := exec.LookPath(args[0])
 		if err != nil {
 			fmt.Print(cmd + ": command not found\n")
+			break
 		}
-		runCmd(path)
+		runCmd(path, args[1:]...)
 	}
 	main()
 }
