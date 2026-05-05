@@ -10,6 +10,12 @@ import (
 	customDS "github.com/codecrafters-io/shell-starter-go/internal/custom"
 )
 
+func runCmd(name string) {
+	cmd := exec.Command(name)
+	out, _ := cmd.CombinedOutput()
+	fmt.Println(string(out))
+}
+
 func main() {
 	fmt.Print("$ ")
 	line, err := (bufio.NewReader(os.Stdin).ReadString('\n'))
@@ -47,7 +53,11 @@ func main() {
 			fmt.Printf("%s is %s\n", args[1], path)
 		}
 	default:
-		fmt.Print(cmd + ": command not found\n")
+		path, err := exec.LookPath(args[1])
+		if err != nil {
+			fmt.Print(cmd + ": command not found\n")
+		}
+		runCmd(path)
 	}
 	main()
 }
