@@ -59,9 +59,12 @@ func main() {
 			fmt.Printf("%s is %s\n", args[1], path)
 		}
 	case "PWD":
-		cmd := exec.Command("pwd")
-		out, _ := cmd.Output()
-		fmt.Print(string(out))
+		dir, err := os.Getwd()
+		if err != nil {
+			fmt.Println("error: ", err)
+			break
+		}
+		fmt.Println(dir)
 	default:
 		_, err := exec.LookPath(args[0])
 		if err != nil {
