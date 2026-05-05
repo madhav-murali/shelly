@@ -58,6 +58,11 @@ func main() {
 			fmt.Printf("%s is %s\n", args[1], path)
 		}
 	default:
+		_, err := exec.LookPath(args[1])
+		if err != nil {
+			fmt.Printf("%s: not found\n", args[1])
+			break
+		}
 		runCmd(args[0], args[1:]...)
 	}
 	main()
