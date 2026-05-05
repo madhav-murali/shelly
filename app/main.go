@@ -60,7 +60,7 @@ func main() {
 		}
 	case "PWD":
 		cmd := exec.Command("pwd")
-		out, _ := cmd.CombinedOutput()
+		out, _ := cmd.Output()
 		fmt.Print(string(out))
 	default:
 		_, err := exec.LookPath(args[0])
