@@ -35,7 +35,6 @@ func main() {
 	validCmds.Add("TYPE")
 	validCmds.Add("PWD")
 	validCmds.Add("CD")
-	validCmds.Add("CAT")
 
 	//TODO: add ' quote capability.
 
