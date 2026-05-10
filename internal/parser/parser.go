@@ -10,11 +10,13 @@ func ParseLine(line string) []string {
 		switch runeVal {
 		case '\'':
 			inQuotes = !inQuotes
-			continue
 		case ' ':
 			if inQuotes {
 				current.WriteRune(runeVal)
 			} else {
+				if current.Len() == 0 {
+					continue
+				}
 				args = append(args, current.String())
 				current.Reset()
 			}
