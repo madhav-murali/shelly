@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	customDS "github.com/codecrafters-io/shell-starter-go/internal/custom"
+	parser "github.com/codecrafters-io/shell-starter-go/internal/parser"
 )
 
 func runCmd(name string, args ...string) {
@@ -34,8 +35,12 @@ func main() {
 	validCmds.Add("TYPE")
 	validCmds.Add("PWD")
 	validCmds.Add("CD")
+	validCmds.Add("CAT")
 
-	args := strings.Split(line, " ")
+	//TODO: add ' quote capability.
+
+	args := parser.ParseLine(line)
+
 	cmd := args[0]
 	switch strings.ToUpper(cmd) {
 	case "EXIT":
@@ -80,6 +85,7 @@ func main() {
 			fmt.Printf("cd: %s: No such file or directory\n", args[1])
 			break
 		}
+	// case "CAT": #TODO because a naive impleme
 	default:
 		_, err := exec.LookPath(args[0])
 		if err != nil {
