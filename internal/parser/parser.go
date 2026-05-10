@@ -22,5 +22,8 @@ func ParseLine(line string) []string {
 			current.WriteRune(runeVal)
 		}
 	}
+	if current.Len() > 0 {
+		args = append(args, current.String())
+	}
 	return args
 }
