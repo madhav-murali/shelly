@@ -40,7 +40,6 @@ func main() {
 	//TODO: add ' quote capability.
 
 	args := parser.ParseLine(line)
-	fmt.Println(args)
 	cmd := args[0]
 	switch strings.ToUpper(cmd) {
 	case "EXIT":
