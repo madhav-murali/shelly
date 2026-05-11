@@ -2,16 +2,31 @@ package parser
 
 import "strings"
 
+// Include the functionality of single quotes; currently implementing double quotes integ
 func ParseLine(line string) []string {
 	var inQuotes bool
+	var inDQuotes bool
 	var current strings.Builder
 	var args []string
-	for _, runeVal := range line {
+	for i, runeVal := range line {
 		switch runeVal {
+		case '"':
+			if i != len(line)-1 && i != 0 {
+				if line[i+1] == '"' {
+					continue
+				} else if line[i-1] == '"' { // this is stupid
+					continue
+				}
+			}
+			inDQuotes = !inDQuotes
 		case '\'':
-			inQuotes = !inQuotes
+			if inDQuotes {
+				current.WriteRune(runeVal)
+			} else {
+				inQuotes = !inQuotes
+			}
 		case ' ':
-			if inQuotes {
+			if inQuotes || inDQuotes {
 				current.WriteRune(runeVal)
 			} else {
 				if current.Len() == 0 {
