@@ -9,7 +9,13 @@ func ParseLine(line string) []string {
 	var current strings.Builder
 	var args []string
 	for i, runeVal := range line {
+		if i > 0 && line[i-1] == '\\' {
+			current.WriteRune(runeVal)
+			continue
+		}
 		switch runeVal {
+		case '\\':
+			continue
 		case '"':
 			if i != len(line)-1 && i != 0 {
 				if line[i+1] == '"' {
