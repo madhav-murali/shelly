@@ -15,6 +15,9 @@ func ParseLine(line string) []string {
 		}
 		switch runeVal {
 		case '\\':
+			if inQuotes {
+				current.WriteRune(runeVal)
+			}
 			continue
 		case '"':
 			if i != len(line)-1 && i != 0 {
