@@ -12,17 +12,29 @@ import (
 	parser "github.com/codecrafters-io/shell-starter-go/internal/parser"
 )
 
-func runCmd(name string, args ...string) []byte {
+// returns a buffer containing stdout and stderr
+func runCmd(name string, args ...string) ([]byte, []byte) {
 	var stdoutBuf, stderrBuf bytes.Buffer
 	cmd := exec.Command(name, args...)
 	cmd.Stdout = &stdoutBuf
 	cmd.Stderr = &stderrBuf
 	_ = cmd.Run()
-	if stderrBuf.Len() > 0 {
-		fmt.Print(stderrBuf.String())
-	}
+	// if stderrBuf.Len() > 0 {
+	// 	fmt.Print(stderrBuf.String())
+	// }
 	//out, _ := cmd.CombinedOutput()
-	return stdoutBuf.Bytes()
+	return stdoutBuf.Bytes(), stderrBuf.Bytes()
+}
+
+func writeToFile(fileName string, output []byte) error {
+	file, err := os.OpenFile(fileName, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	file.Write(output)
+	return nil
 }
 
 func main() {
@@ -45,6 +57,7 @@ func main() {
 	validCmds.Add("CD")
 
 	var redirects bool
+	var redirectErr bool
 	var fileName string
 	// if strings.Contains(line, ">") {
 	// 	redirects = true
@@ -62,6 +75,11 @@ func main() {
 	for i, arg := range args {
 		if arg == ">" || arg == "1>" {
 			redirects = true
+			fileName = args[i+1]
+			args = args[:i]
+			break
+		} else if arg == "2>" {
+			redirectErr = true
 			fileName = args[i+1]
 			args = args[:i]
 			break
@@ -125,22 +143,29 @@ func main() {
 		// 	fileName = strings.Join(args[idx+1:], "")
 		// 	args = args[:idx]
 		// }
-		output := runCmd(args[0], args[1:]...)
+		stdOut, stdErr := runCmd(args[0], args[1:]...)
+
+		if redirectErr {
+			if err = writeToFile(fileName, stdErr); err != nil {
+				panic(err)
+			}
+		} else {
+			if len(stdErr) > 0 {
+				fmt.Print(string(stdErr))
+			}
+		}
+
 		if !redirects {
-			fmt.Print(string(output))
+			fmt.Print(string(stdOut))
 		} else {
 			// dir := filepath.Dir(fileName)
 			// err = os.Mkdir(dir, 0755)
 			// if err != nil {
 			// 	panic(err)
 			// }
-			file, err := os.OpenFile(fileName, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
-			if err != nil {
+			if err = writeToFile(fileName, stdOut); err != nil {
 				panic(err)
 			}
-			defer file.Close()
-
-			file.Write(output)
 		}
 	}
 	main()
