@@ -8,17 +8,42 @@ func ParseLine(line string) []string {
 	var inDQuotes bool
 	var current strings.Builder
 	var args []string
-	for i, runeVal := range line {
-		if i > 0 && line[i-1] == '\\' && !inQuotes {
-			current.WriteRune(runeVal)
-			continue
-		}
-		switch runeVal {
-		case '\\':
-			if inQuotes {
-				current.WriteRune(runeVal)
+
+	for i := 0; i < len(line); i++ {
+		runeVal := line[i]
+		// if i > 0 && line[i-1] == '\\' && !inQuotes {
+		// 	current.WriteByte(runeVal)
+		// 	continue
+		// }
+
+		if inQuotes {
+			if runeVal == '\'' {
+				inQuotes = false
+			} else {
+				current.WriteByte(runeVal)
 			}
 			continue
+		}
+
+		if runeVal == '\\' {
+			if i+1 < len(line) {
+				nextChar := line[i+1]
+				if inDQuotes {
+					if nextChar == '$' || nextChar == '"' || nextChar == '`' || nextChar == '\n' || nextChar == '\\' {
+						current.WriteByte(nextChar)
+						i++
+					} else {
+						current.WriteByte('\\')
+					}
+				} else {
+					current.WriteByte(nextChar)
+					i++
+				}
+			}
+			continue
+		}
+
+		switch runeVal {
 		case '"':
 			if i != len(line)-1 && i != 0 {
 				if line[i+1] == '"' {
@@ -30,13 +55,13 @@ func ParseLine(line string) []string {
 			inDQuotes = !inDQuotes
 		case '\'':
 			if inDQuotes {
-				current.WriteRune(runeVal)
+				current.WriteByte(runeVal)
 			} else {
 				inQuotes = !inQuotes
 			}
 		case ' ':
 			if inQuotes || inDQuotes {
-				current.WriteRune(runeVal)
+				current.WriteByte(runeVal)
 			} else {
 				if current.Len() == 0 {
 					continue
@@ -45,7 +70,7 @@ func ParseLine(line string) []string {
 				current.Reset()
 			}
 		default:
-			current.WriteRune(runeVal)
+			current.WriteByte(runeVal)
 		}
 	}
 	if current.Len() > 0 {
