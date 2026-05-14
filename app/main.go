@@ -26,14 +26,23 @@ func runCmd(name string, args ...string) ([]byte, []byte) {
 	return stdoutBuf.Bytes(), stderrBuf.Bytes()
 }
 
-func writeToFile(fileName string, output []byte) error {
-	file, err := os.OpenFile(fileName, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
+func writeToFile(fileName string, output []byte, preserve bool) error {
+	flags := os.O_CREATE | os.O_WRONLY
+	if preserve {
+		flags |= os.O_APPEND
+	} else {
+		flags |= os.O_TRUNC
+	}
+	file, err := os.OpenFile(fileName, flags, 0644)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	file.Write(output)
+	_, err = file.Write(output)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -59,27 +68,23 @@ func main() {
 	var redirects bool
 	var redirectErr bool
 	var fileName string
-	// if strings.Contains(line, ">") {
-	// 	redirects = true
-	// 	idx := strings.Index(line, ">")
-	// 	fileName = strings.TrimSpace(line[idx+1:])
-	// 	if idx > 0 && line[idx-1] != '1' {
-	// 		line = line[:idx]
-	// 	} else {
-	// 		line = line[:idx-1]
-	// 	}
-	// }
-
+	var appends bool
 	args := parser.ParseLine(line)
 
 	for i, arg := range args {
-		if arg == ">" || arg == "1>" {
+		if arg == ">" || arg == "1>" || arg == ">>" || arg == "1>>" {
 			redirects = true
+			if arg == ">>" || arg == "1>>" {
+				appends = true
+			}
 			fileName = args[i+1]
 			args = args[:i]
 			break
-		} else if arg == "2>" {
+		} else if arg == "2>" || arg == "2>>" {
 			redirectErr = true
+			if arg == "2>>" {
+				appends = true
+			}
 			fileName = args[i+1]
 			args = args[:i]
 			break
@@ -129,7 +134,6 @@ func main() {
 			fmt.Printf("cd: %s: No such file or directory\n", args[1])
 			break
 		}
-	// case "CAT": #TODO because a naive impleme
 	default:
 		_, err := exec.LookPath(args[0])
 		if err != nil {
@@ -137,16 +141,10 @@ func main() {
 			break
 		}
 
-		// if slices.Contains(args, ">") {
-		// 	redirects = true
-		// 	idx := slices.Index(args, ">")
-		// 	fileName = strings.Join(args[idx+1:], "")
-		// 	args = args[:idx]
-		// }
 		stdOut, stdErr := runCmd(args[0], args[1:]...)
 
 		if redirectErr {
-			if err = writeToFile(fileName, stdErr); err != nil {
+			if err = writeToFile(fileName, stdErr, appends); err != nil {
 				panic(err)
 			}
 		} else {
@@ -163,7 +161,7 @@ func main() {
 			// if err != nil {
 			// 	panic(err)
 			// }
-			if err = writeToFile(fileName, stdOut); err != nil {
+			if err = writeToFile(fileName, stdOut, appends); err != nil {
 				panic(err)
 			}
 		}
