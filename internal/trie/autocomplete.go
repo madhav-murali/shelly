@@ -1,5 +1,10 @@
 package trie
 
+import (
+	"os"
+	"strings"
+)
+
 type Node struct {
 	isEnd bool
 	child map[rune]*Node
@@ -80,5 +85,26 @@ func (t *Trie) collect(node *Node, currentWord string, results *[]string) {
 	for key, childNode := range node.child {
 		nextWord := currentWord + string(key)
 		t.collect(childNode, nextWord, results)
+	}
+}
+
+func (t *Trie) IndexSystemPath() {
+	pathEnv := os.Getenv("PATH")
+	if pathEnv == "" {
+		return
+	}
+
+	dirs := strings.Split(pathEnv, string(os.PathListSeparator))
+
+	for _, dir := range dirs {
+		entries, err := os.ReadDir(dir)
+		if err != nil {
+			continue
+		}
+		for _, entry := range entries {
+			if entry.Type().IsRegular() {
+				t.Add(entry.Name())
+			}
+		}
 	}
 }

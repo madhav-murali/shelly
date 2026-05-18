@@ -68,6 +68,7 @@ func main() {
 	validCmds.Add("CD")
 	tr := trie.NewTrie()
 	tr.AddAll(validCmds.ReturnAllLower())
+	tr.IndexSystemPath()
 	t := term.NewTerminal(os.Stdin, "$ ")
 
 	err = t.SetSize(4096, 80)
