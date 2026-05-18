@@ -82,6 +82,7 @@ func main() {
 			}
 			commands, ok := tr.HasPrefix(line)
 			if !ok {
+				fmt.Fprintf(t, "\x07")
 				return line, pos, false
 			}
 			slices.SortFunc(commands, func(a, b string) int {
