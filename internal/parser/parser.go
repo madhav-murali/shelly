@@ -45,13 +45,6 @@ func ParseLine(line string) []string {
 
 		switch runeVal {
 		case '"':
-			if i != len(line)-1 && i != 0 {
-				if line[i+1] == '"' {
-					continue
-				} else if line[i-1] == '"' { // this is stupid
-					continue
-				}
-			}
 			inDQuotes = !inDQuotes
 		case '\'':
 			if inDQuotes {

@@ -1,5 +1,11 @@
 package custom
 
+import (
+	"maps"
+	"slices"
+	"strings"
+)
+
 type CmdSet struct {
 	items map[string]struct{}
 }
@@ -21,4 +27,17 @@ func (c *CmdSet) Add(key string) {
 
 func (c *CmdSet) Delete(key string) {
 	delete(c.items, key)
+}
+
+func (c *CmdSet) ReturnAll() []string {
+	return slices.Collect(maps.Keys(c.items))
+}
+
+func (c *CmdSet) ReturnAllLower() []string {
+	var res []string
+	res = c.ReturnAll()
+	for i, word := range res {
+		res[i] = strings.ToLower(word)
+	}
+	return res
 }
