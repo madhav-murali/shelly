@@ -97,6 +97,13 @@ func main() {
 
 			//when more than one commands found to be here
 
+			commonPrefix := tr.LCP(line)
+
+			if len(commonPrefix) > len(line) {
+				tabCount = 0
+				return commonPrefix, len(commonPrefix), true
+			}
+
 			if line != lastLine {
 				tabCount = 0
 			}

@@ -108,3 +108,23 @@ func (t *Trie) IndexSystemPath() {
 		}
 	}
 }
+
+func (t *Trie) LCP(prefix string) string {
+	cur := t.root
+	for _, c := range prefix {
+		next, ok := cur.child[c]
+		if !ok {
+			return ""
+		}
+		cur = next
+	}
+	lsp := prefix
+	for len(cur.child) == 1 && !cur.isEnd {
+		//var nextRune rune
+		for r, next := range cur.child {
+			lsp += string(r)
+			cur = next
+		}
+	}
+	return lsp
+}
