@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"cmp"
 	"fmt"
 	"os"
 	"os/exec"
@@ -76,22 +75,57 @@ func main() {
 		fmt.Printf("err : %v", err)
 		os.Exit(1)
 	}
+
+	var tabCount int16
+	var lastLine string
 	t.AutoCompleteCallback = func(line string, pos int, key rune) (newLine string, newPos int, ok bool) {
 		if key == '\t' {
 			if strings.Contains(line, " ") {
 				return line, pos, false
 			}
 			commands, ok := tr.HasPrefix(line)
-			if !ok {
+			if !ok || len(commands) == 0 {
 				fmt.Fprintf(t, "\x07")
 				return line, pos, false
 			}
-			slices.SortFunc(commands, func(a, b string) int {
-				return cmp.Compare(len(a), len(b))
-			})
-			command := commands[0] + " "
-			return command, len(command), true
+
+			if len(commands) == 1 {
+				tabCount = 0
+				completed := commands[0] + " "
+				return completed, len(completed), true
+			}
+
+			//when more than one commands found to be here
+
+			if line != lastLine {
+				tabCount = 0
+			}
+
+			tabCount++
+			lastLine = line
+
+			if tabCount == 1 {
+				fmt.Fprintf(t, "\x07")
+				return line, pos, false
+			} else if tabCount == 2 {
+				tabCount = 0
+
+				slices.Sort(commands)
+				fmt.Fprintf(t, "$ %s", line)
+				fmt.Fprintf(t, "\r\n%s\r\n", strings.Join(commands, "  "))
+
+				return line, pos, false
+			}
+
+			// slices.SortFunc(commands, func(a, b string) int {
+			// 	return cmp.Compare(len(a), len(b))
+			// })
+			// command := commands[0] + " "
+			// return command, len(command), true
 		}
+
+		tabCount = 0
+		lastLine = ""
 		return line, pos, false
 	}
 
