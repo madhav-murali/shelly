@@ -8,9 +8,9 @@ import (
 	"slices"
 	"strings"
 
+	trie "github.com/codecrafters-io/shell-starter-go/internal/autocomplete"
 	customDS "github.com/codecrafters-io/shell-starter-go/internal/custom"
 	parser "github.com/codecrafters-io/shell-starter-go/internal/parser"
-	"github.com/codecrafters-io/shell-starter-go/internal/trie"
 
 	"golang.org/x/term"
 )
@@ -68,6 +68,10 @@ func main() {
 	tr := trie.NewTrie()
 	tr.AddAll(validCmds.ReturnAllLower())
 	tr.IndexSystemPath()
+
+	//File trie
+	ftrie := trie.NewTrie()
+	ftrie.GetCurrentDirFiles()
 	t := term.NewTerminal(os.Stdin, "$ ")
 
 	err = t.SetSize(4096, 80)
@@ -81,7 +85,24 @@ func main() {
 	t.AutoCompleteCallback = func(line string, pos int, key rune) (newLine string, newPos int, ok bool) {
 		if key == '\t' {
 			if strings.Contains(line, " ") {
-				return line, pos, false
+				//means we are searching for filename
+				words := strings.Fields(line)
+				if len(words) == 0 {
+					return line, pos, false
+				}
+				word := words[len(words)-1]
+				NewLine := strings.Join(words[:len(words)-1], " ")
+
+				files, ok := ftrie.HasPrefix(word)
+				if !ok || len(files) == 0 {
+					fmt.Fprintf(t, "\x07")
+					return line, pos, false
+				}
+				if len(files) == 1 {
+					file := " " + files[0] + " "
+					NewLine += file
+					return NewLine, len(NewLine), true
+				}
 			}
 			commands, ok := tr.HasPrefix(line)
 			if !ok || len(commands) == 0 {

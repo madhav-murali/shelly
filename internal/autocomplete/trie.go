@@ -1,6 +1,7 @@
 package trie
 
 import (
+	"log"
 	"os"
 	"strings"
 )
@@ -127,4 +128,15 @@ func (t *Trie) LCP(prefix string) string {
 		}
 	}
 	return lsp
+}
+
+func (t *Trie) GetCurrentDirFiles() {
+	files, err := os.ReadDir(".")
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, entry := range files {
+		//fmt.Println(entry.Name())
+		t.Add(entry.Name())
+	}
 }
