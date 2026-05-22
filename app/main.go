@@ -64,11 +64,18 @@ func FileCompletetion(t *term.Terminal, ftrie *trie.Trie, line string, pos int, 
 		fmt.Fprintf(t, "\x07")
 		return line, pos, false
 	}
+	if strings.Contains(files[0], "/") {
+		before, _, _ := strings.Cut(files[0], "/")
+		file := " " + before + "/" + " "
+		NewLine += file
+		return NewLine, len(NewLine), true
+	}
 	if len(files) == 1 {
 		file := " " + files[0] + " "
 		NewLine += file
 		return NewLine, len(NewLine), true
 	}
+
 	return line, pos, false
 }
 
@@ -152,12 +159,6 @@ func main() {
 
 				return line, pos, false
 			}
-
-			// slices.SortFunc(commands, func(a, b string) int {
-			// 	return cmp.Compare(len(a), len(b))
-			// })
-			// command := commands[0] + " "
-			// return command, len(command), true
 		}
 
 		tabCount = 0
