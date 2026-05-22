@@ -49,6 +49,29 @@ func writeToFile(fileName string, output []byte, preserve bool) error {
 	return nil
 }
 
+//func GetPathAndWalk(tr *trie.Trie, )
+
+func FileCompletetion(t *term.Terminal, ftrie *trie.Trie, line string, pos int, key rune) (newLine string, newPos int, ok bool) {
+	words := strings.Fields(line)
+	if len(words) == 0 {
+		return line, pos, false
+	}
+	word := words[len(words)-1]
+	NewLine := strings.Join(words[:len(words)-1], " ")
+
+	files, ok := ftrie.HasPrefix(word)
+	if !ok || len(files) == 0 {
+		fmt.Fprintf(t, "\x07")
+		return line, pos, false
+	}
+	if len(files) == 1 {
+		file := " " + files[0] + " "
+		NewLine += file
+		return NewLine, len(NewLine), true
+	}
+	return line, pos, false
+}
+
 func main() {
 
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
@@ -86,23 +109,7 @@ func main() {
 		if key == '\t' {
 			if strings.Contains(line, " ") {
 				//means we are searching for filename
-				words := strings.Fields(line)
-				if len(words) == 0 {
-					return line, pos, false
-				}
-				word := words[len(words)-1]
-				NewLine := strings.Join(words[:len(words)-1], " ")
-
-				files, ok := ftrie.HasPrefix(word)
-				if !ok || len(files) == 0 {
-					fmt.Fprintf(t, "\x07")
-					return line, pos, false
-				}
-				if len(files) == 1 {
-					file := " " + files[0] + " "
-					NewLine += file
-					return NewLine, len(NewLine), true
-				}
+				return FileCompletetion(t, ftrie, line, pos, key)
 			}
 			commands, ok := tr.HasPrefix(line)
 			if !ok || len(commands) == 0 {
@@ -132,10 +139,11 @@ func main() {
 			tabCount++
 			lastLine = line
 
-			if tabCount == 1 {
+			switch tabCount {
+			case 1:
 				fmt.Fprintf(t, "\x07")
 				return line, pos, false
-			} else if tabCount == 2 {
+			case 2:
 				tabCount = 0
 
 				slices.Sort(commands)

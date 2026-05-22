@@ -1,8 +1,10 @@
 package trie
 
 import (
+	"io/fs"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -131,12 +133,24 @@ func (t *Trie) LCP(prefix string) string {
 }
 
 func (t *Trie) GetCurrentDirFiles() {
-	files, err := os.ReadDir(".")
+	// files, err := os.ReadDir(".")
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
+	// for _, entry := range files {
+	// 	//fmt.Println(entry.Name())
+	// 	t.Add(entry.Name())
+	// }
+	err := filepath.WalkDir(".", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if !d.IsDir() {
+			t.Add(path)
+		}
+		return nil
+	})
 	if err != nil {
 		log.Fatal(err)
-	}
-	for _, entry := range files {
-		//fmt.Println(entry.Name())
-		t.Add(entry.Name())
 	}
 }
