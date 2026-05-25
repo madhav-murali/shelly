@@ -22,7 +22,7 @@ func getLSP(strs []string) string {
 	return prefix
 }
 
-func multiReturn(t *term.Terminal, matches []string, line string, pos int, tabCount *int16, lastLine *string) (newLine string, newPos int, ok bool) {
+func multiReturn(t *term.Terminal, matches []string, cmdPrefix string, word string, line string, pos int, tabCount *int16, lastLine *string) (newLine string, newPos int, ok bool) {
 	if line != *lastLine {
 		*tabCount = 0
 	}
@@ -30,6 +30,12 @@ func multiReturn(t *term.Terminal, matches []string, line string, pos int, tabCo
 	*lastLine = line
 	switch *tabCount {
 	case 1:
+		lcp := getLSP(matches)
+		if len(lcp) > len(word) {
+			*tabCount = 0
+			completion := cmdPrefix + lcp
+			return completion, len(completion), true
+		}
 		fmt.Fprintf(t, "\x07")
 		return line, pos, false
 	case 2:
@@ -94,7 +100,7 @@ func FileCompletetion(t *term.Terminal, line string, pos int, key rune, tabCount
 		return newLine, len(newLine), true
 	default:
 		//fmt.Fprintf(t, "matches has len: %d", len(matches))
-		return multiReturn(t, matches, line, pos, tabCount, lastLine)
+		return multiReturn(t, matches, cmdPrefix, word, line, pos, tabCount, lastLine)
 	}
 
 	fmt.Fprintf(t, "\x07")
