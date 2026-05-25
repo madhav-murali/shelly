@@ -86,7 +86,7 @@ func main() {
 		if key == '\t' {
 			if strings.Contains(line, " ") {
 				//means we are searching for filename
-				return auto.FileCompletetion(t, line, pos, key)
+				return auto.FileCompletetion(t, line, pos, key, &tabCount, &lastLine)
 			}
 			commands, ok := tr.HasPrefix(line)
 			if !ok || len(commands) == 0 {

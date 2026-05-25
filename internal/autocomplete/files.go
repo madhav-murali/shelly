@@ -3,6 +3,7 @@ package auto
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 
 	"golang.org/x/term"
@@ -21,7 +22,27 @@ func getLSP(strs []string) string {
 	return prefix
 }
 
-func FileCompletetion(t *term.Terminal, line string, pos int, key rune) (newLine string, newPos int, ok bool) {
+func multiReturn(t *term.Terminal, matches []string, line string, pos int, tabCount *int16, lastLine *string) (newLine string, newPos int, ok bool) {
+	if line != *lastLine {
+		*tabCount = 0
+	}
+	*tabCount++
+	*lastLine = line
+	switch *tabCount {
+	case 1:
+		fmt.Fprintf(t, "\x07")
+		return line, pos, false
+	case 2:
+		*tabCount = 0
+		slices.Sort(matches)
+		fmt.Fprintf(t, "$ %s", line)
+		fmt.Fprintf(t, "\r\n%s\r\n", strings.Join(matches, "  "))
+		return line, pos, false
+	}
+	return line, pos, false
+}
+
+func FileCompletetion(t *term.Terminal, line string, pos int, key rune, tabCount *int16, lastLine *string) (newLine string, newPos int, ok bool) {
 	lastSpace := strings.LastIndex(line, " ")
 	if lastSpace == -1 {
 		return line, pos, false
@@ -72,11 +93,8 @@ func FileCompletetion(t *term.Terminal, line string, pos int, key rune) (newLine
 		}
 		return newLine, len(newLine), true
 	default:
-		lcp := getLSP(matches)
-		if len(lcp) > len(filePrefix) {
-			newLine = cmdPrefix + lcp
-			return newLine, len(newLine), true
-		}
+		//fmt.Fprintf(t, "matches has len: %d", len(matches))
+		return multiReturn(t, matches, line, pos, tabCount, lastLine)
 	}
 
 	fmt.Fprintf(t, "\x07")
