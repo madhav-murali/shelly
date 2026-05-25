@@ -66,6 +66,7 @@ func main() {
 	validCmds.Add("TYPE")
 	validCmds.Add("PWD")
 	validCmds.Add("CD")
+	validCmds.Add("JOBS")
 	//command auto
 	tr := auto.NewTrie()
 	tr.AddAll(validCmds.ReturnAllLower())
@@ -153,6 +154,9 @@ func main() {
 		var fileName string
 		var appends bool
 		args := parser.ParseLine(line)
+		if args[0] == "jobs" {
+			args = []string{"bash", "-c", "jobs"}
+		}
 
 		for i, arg := range args {
 			if arg == ">" || arg == "1>" || arg == ">>" || arg == "1>>" {
