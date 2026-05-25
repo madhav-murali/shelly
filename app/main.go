@@ -8,7 +8,7 @@ import (
 	"slices"
 	"strings"
 
-	trie "github.com/codecrafters-io/shell-starter-go/internal/autocomplete"
+	auto "github.com/codecrafters-io/shell-starter-go/internal/autocomplete"
 	customDS "github.com/codecrafters-io/shell-starter-go/internal/custom"
 	parser "github.com/codecrafters-io/shell-starter-go/internal/parser"
 
@@ -49,38 +49,9 @@ func writeToFile(fileName string, output []byte, preserve bool) error {
 	return nil
 }
 
-//func GetPathAndWalk(tr *trie.Trie, )
-
-func FileCompletetion(t *term.Terminal, ftrie *trie.Trie, line string, pos int, key rune) (newLine string, newPos int, ok bool) {
-	words := strings.Fields(line)
-	if len(words) == 0 {
-		return line, pos, false
-	}
-	word := words[len(words)-1]
-	NewLine := strings.Join(words[:len(words)-1], " ")
-
-	files, ok := ftrie.HasPrefix(word)
-	if !ok || len(files) == 0 {
-		fmt.Fprintf(t, "\x07")
-		return line, pos, false
-	}
-	if strings.Contains(files[0], "/") {
-		before, _, _ := strings.Cut(files[0], "/")
-		file := " " + before + "/" + " "
-		NewLine += file
-		return NewLine, len(NewLine), true
-	}
-	if len(files) == 1 {
-		file := " " + files[0] + " "
-		NewLine += file
-		return NewLine, len(NewLine), true
-	}
-
-	return line, pos, false
-}
+//func GetPathAndWalk(tr *auto.auto, )
 
 func main() {
-
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "failed to set raw mode: ", err)
@@ -95,13 +66,12 @@ func main() {
 	validCmds.Add("TYPE")
 	validCmds.Add("PWD")
 	validCmds.Add("CD")
-	tr := trie.NewTrie()
+	//command auto
+	tr := auto.NewTrie()
 	tr.AddAll(validCmds.ReturnAllLower())
 	tr.IndexSystemPath()
 
-	//File trie
-	ftrie := trie.NewTrie()
-	ftrie.GetCurrentDirFiles()
+	//File auto
 	t := term.NewTerminal(os.Stdin, "$ ")
 
 	err = t.SetSize(4096, 80)
@@ -116,7 +86,7 @@ func main() {
 		if key == '\t' {
 			if strings.Contains(line, " ") {
 				//means we are searching for filename
-				return FileCompletetion(t, ftrie, line, pos, key)
+				return auto.FileCompletetion(t, line, pos, key)
 			}
 			commands, ok := tr.HasPrefix(line)
 			if !ok || len(commands) == 0 {

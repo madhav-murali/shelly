@@ -1,10 +1,7 @@
-package trie
+package auto
 
 import (
-	"io/fs"
-	"log"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -132,25 +129,48 @@ func (t *Trie) LCP(prefix string) string {
 	return lsp
 }
 
-func (t *Trie) GetCurrentDirFiles() {
-	// files, err := os.ReadDir(".")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// for _, entry := range files {
-	// 	//fmt.Println(entry.Name())
-	// 	t.Add(entry.Name())
-	// }
-	err := filepath.WalkDir(".", func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			return err
-		}
-		if !d.IsDir() {
-			t.Add(path)
-		}
-		return nil
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-}
+// func (t *Trie) PrintAllFilesAndDirs(term *term.Terminal) {
+// 	var names []string
+// 	t.printAllWords(t.root, "", &names)
+// 	for _, word := range names {
+// 		fmt.Fprintln(term, word)
+// 	}
+// }
+
+// func (t *Trie) printAllWords(node *Node, prefix string, names *[]string) {
+// 	if node.isEnd {
+// 		*names = append(*names, prefix)
+// 	}
+// 	keys := make([]rune, 0, len(node.child))
+// 	for char := range node.child {
+// 		keys = append(keys, char)
+// 	}
+// 	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
+// 	for _, char := range keys {
+// 		t.printAllWords(node.child[char], prefix+string(char), names)
+// 	}
+// }
+
+// func (t *Trie) GetCurrentDirFiles() {
+// 	// files, err := os.ReadDir(".")
+// 	// if err != nil {
+// 	// 	log.Fatal(err)
+// 	// }
+// 	// for _, entry := range files {
+// 	// 	//fmt.Println(entry.Name())
+// 	// 	t.Add(entry.Name())
+// 	// }
+// 	err := filepath.WalkDir(".", func(path string, d fs.DirEntry, err error) error {
+// 		if err != nil {
+// 			return err
+// 		}
+// 		if !d.IsDir() {
+// 			t.Add(path)f
+// 		}
+// 		return nil
+// 	})
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// }
+//try with filepath.Walkdir in the file completion later too.
