@@ -17,9 +17,15 @@ import (
 )
 
 // returns a buffer containing stdout and stderr
-func runCmd(isBackground bool, oldState *term.State, jobManager *jobs.Manager, t *term.Terminal, name string, args ...string) ([]byte, []byte) {
+func runCmd(oldState *term.State, jobManager *jobs.Manager, t *term.Terminal, args []string) ([]byte, []byte) {
 	var stdoutBuf, stderrBuf bytes.Buffer
-	cmd := exec.Command(name, args...)
+	originalCmd := strings.Join(args, " ")
+	isBackground := false
+	if len(args) > 0 && args[len(args)-1] == "&" {
+		isBackground = true
+		args = args[:len(args)-1]
+	}
+	cmd := exec.Command(args[0], args[1:]...)
 	cmd.Stdout = &stdoutBuf
 	cmd.Stderr = &stderrBuf
 	if isBackground {
@@ -31,8 +37,7 @@ func runCmd(isBackground bool, oldState *term.State, jobManager *jobs.Manager, t
 		// 	return nil, nil
 		// }
 
-		cmdString := strings.Join(args, " ")
-		jobId := jobManager.Add(cmd.Process.Pid, cmdString)
+		jobId := jobManager.Add(cmd.Process.Pid, originalCmd)
 
 		go func(id int) {
 			cmd.Wait()
@@ -181,11 +186,6 @@ func main() {
 		var fileName string
 		var appends bool
 		args := parser.ParseLine(line)
-		isBackground := false
-		if len(args) > 0 && args[len(args)-1] == "&" {
-			isBackground = true
-			args = args[:len(args)-1]
-		}
 
 		if len(args) == 0 {
 			continue
@@ -264,7 +264,7 @@ func main() {
 				break
 			}
 
-			stdOut, stdErr := runCmd(isBackground, oldState, jb, t, args[0], args[1:]...)
+			stdOut, stdErr := runCmd(oldState, jb, t, args)
 
 			if redirectErr {
 				if err = writeToFile(fileName, stdErr, appends); err != nil {
