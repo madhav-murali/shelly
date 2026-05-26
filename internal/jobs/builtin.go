@@ -18,11 +18,14 @@ type Manager struct {
 	mu     sync.Mutex
 	jobs   map[int]*Job
 	nextId int
+	curId  int
+	prevId int
 }
 
 func NewManager() *Manager {
 	return &Manager{
 		jobs:   make(map[int]*Job),
+		prevId: 1,
 		nextId: 1,
 	}
 }
@@ -38,6 +41,8 @@ func (m *Manager) Add(pid int, cmd string) int {
 		Command: cmd,
 		State:   "Running                 ",
 	}
+	m.prevId = m.curId
+	m.curId = id
 	m.nextId++
 	return id
 }
@@ -57,8 +62,16 @@ func (m *Manager) ListJobs(t *term.Terminal) {
 
 	for i := 1; i < m.nextId; i++ {
 		if job, exists := m.jobs[i]; exists {
-
-			fmt.Fprintf(t, "[%d]+  %s%s\n", job.ID, job.State, job.Command)
+			var sym string
+			switch job.ID {
+			case m.curId:
+				sym = "+"
+			case m.prevId:
+				sym = "-"
+			default:
+				sym = " "
+			}
+			fmt.Fprintf(t, "[%d]%s  %s%s\n", job.ID, sym, job.State, job.Command)
 
 			if job.State == "Done" {
 				delete(m.jobs, i)
