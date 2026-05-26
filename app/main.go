@@ -10,18 +10,32 @@ import (
 
 	auto "github.com/codecrafters-io/shell-starter-go/internal/autocomplete"
 	customDS "github.com/codecrafters-io/shell-starter-go/internal/custom"
+	"github.com/codecrafters-io/shell-starter-go/internal/jobs"
 	parser "github.com/codecrafters-io/shell-starter-go/internal/parser"
 
 	"golang.org/x/term"
 )
 
 // returns a buffer containing stdout and stderr
-func runCmd(name string, args ...string) ([]byte, []byte) {
+func runCmd(isBackground bool, jobManager *jobs.Manager, t *term.Terminal, name string, args ...string) ([]byte, []byte) {
 	var stdoutBuf, stderrBuf bytes.Buffer
 	cmd := exec.Command(name, args...)
 	cmd.Stdout = &stdoutBuf
 	cmd.Stderr = &stderrBuf
-	_ = cmd.Run()
+	if isBackground {
+		_ = cmd.Start()
+		// if err != nil {
+		// 	fmt.Fprintf(t, "Failed to start background process: %v\n", err)
+		// 	return nil, nil
+		// }
+
+		cmdString := strings.Join(args, " ")
+		jobId := jobManager.Add(cmd.Process.Pid, cmdString)
+
+		fmt.Fprintf(t, "[%d] %d\n", jobId, cmd.Process.Pid)
+	} else {
+		_ = cmd.Run()
+	}
 	// if stderrBuf.Len() > 0 {
 	// 	fmt.Print(stderrBuf.String())
 	// }
@@ -67,6 +81,10 @@ func main() {
 	validCmds.Add("PWD")
 	validCmds.Add("CD")
 	validCmds.Add("JOBS")
+
+	//jobs manager
+	jb := jobs.NewManager()
+
 	//command auto
 	tr := auto.NewTrie()
 	tr.AddAll(validCmds.ReturnAllLower())
@@ -154,8 +172,14 @@ func main() {
 		var fileName string
 		var appends bool
 		args := parser.ParseLine(line)
-		if args[0] == "jobs" {
-			args = []string{"bash", "-c", "jobs"}
+		isBackground := false
+		if len(args) > 0 && args[len(args)-1] == "&" {
+			isBackground = true
+			args = args[:len(args)-1]
+		}
+
+		if len(args) == 0 {
+			continue
 		}
 
 		for i, arg := range args {
@@ -222,6 +246,8 @@ func main() {
 				fmt.Fprintf(t, "cd: %s: No such file or directory\n", args[1])
 				//break
 			}
+		case "JOBS":
+			jb.ListJobs(t)
 		default:
 			_, err := exec.LookPath(args[0])
 			if err != nil {
@@ -229,7 +255,7 @@ func main() {
 				break
 			}
 
-			stdOut, stdErr := runCmd(args[0], args[1:]...)
+			stdOut, stdErr := runCmd(isBackground, jb, t, args[0], args[1:]...)
 
 			if redirectErr {
 				if err = writeToFile(fileName, stdErr, appends); err != nil {
