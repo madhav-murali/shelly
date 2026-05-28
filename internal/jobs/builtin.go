@@ -25,7 +25,6 @@ type Manager struct {
 func NewManager() *Manager {
 	return &Manager{
 		jobs:   make(map[int]*Job),
-		prevId: 1,
 		nextId: 1,
 	}
 }
@@ -41,8 +40,6 @@ func (m *Manager) Add(pid int, cmd string) int {
 		Command: cmd,
 		State:   "Running                 ",
 	}
-	m.prevId = m.curId
-	m.curId = id
 	m.nextId++
 	return id
 }
@@ -60,13 +57,20 @@ func (m *Manager) ListJobs(t *term.Terminal) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
+	var curId, prevId int
+	for id := 1; id < m.nextId; id++ {
+		if _, exists := m.jobs[id]; exists {
+			prevId = curId
+			curId = id
+		}
+	}
 	for i := 1; i < m.nextId; i++ {
 		if job, exists := m.jobs[i]; exists {
 			var sym string
 			switch job.ID {
-			case m.curId:
+			case curId:
 				sym = "+"
-			case m.prevId:
+			case prevId:
 				sym = "-"
 			default:
 				sym = " "
