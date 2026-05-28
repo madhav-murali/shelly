@@ -170,6 +170,8 @@ func main() {
 	}
 
 	for {
+
+		jb.ReapJobs(t)
 		line, err := t.ReadLine()
 		if err != nil {
 			break

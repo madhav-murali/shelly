@@ -53,6 +53,42 @@ func (m *Manager) MarkDone(id int) {
 	}
 }
 
+func (m *Manager) ReapJobs(t *term.Terminal) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	var curId, prevId int
+	for id := 1; id < m.nextId; id++ {
+		if _, exists := m.jobs[id]; exists {
+			prevId = curId
+			curId = id
+		}
+	}
+	for i := 1; i < m.nextId; i++ {
+		if job, exists := m.jobs[i]; exists {
+			if job.State == "Done                    " {
+				var sym string
+				switch job.ID {
+				case curId:
+					sym = "+"
+				case prevId:
+					sym = "-"
+				default:
+					sym = " "
+				}
+				var cmd = job.Command
+				if job.State == "Done                    " {
+					cmd = cmd[:len(cmd)-1]
+				}
+				fmt.Fprintf(t, "[%d]%s  %s%s\n", job.ID, sym, job.State, cmd)
+
+				delete(m.jobs, i)
+
+			}
+		}
+	}
+}
+
 func (m *Manager) ListJobs(t *term.Terminal) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
