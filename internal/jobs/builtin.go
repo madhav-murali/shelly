@@ -52,7 +52,7 @@ func (m *Manager) MarkDone(id int) {
 	defer m.mu.Unlock()
 
 	if job, exists := m.jobs[id]; exists {
-		job.State = "Done"
+		job.State = "Done                    "
 	}
 }
 
@@ -71,9 +71,13 @@ func (m *Manager) ListJobs(t *term.Terminal) {
 			default:
 				sym = " "
 			}
-			fmt.Fprintf(t, "[%d]%s  %s%s\n", job.ID, sym, job.State, job.Command)
+			var cmd = job.Command
+			if job.State == "Done                    " {
+				cmd = cmd[:len(cmd)-1]
+			}
+			fmt.Fprintf(t, "[%d]%s  %s%s\n", job.ID, sym, job.State, cmd)
 
-			if job.State == "Done" {
+			if job.State == "Done                    " {
 				delete(m.jobs, i)
 			}
 		}
