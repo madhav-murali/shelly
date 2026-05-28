@@ -15,17 +15,13 @@ type Job struct {
 }
 
 type Manager struct {
-	mu     sync.Mutex
-	jobs   map[int]*Job
-	nextId int
-	curId  int
-	prevId int
+	mu   sync.Mutex
+	jobs map[int]*Job
 }
 
 func NewManager() *Manager {
 	return &Manager{
-		jobs:   make(map[int]*Job),
-		nextId: 1,
+		jobs: make(map[int]*Job),
 	}
 }
 
@@ -33,14 +29,19 @@ func (m *Manager) Add(pid int, cmd string) int {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	id := m.nextId
+	id := 1
+	for {
+		if _, exists := m.jobs[id]; !exists {
+			break
+		}
+		id++
+	}
 	m.jobs[id] = &Job{
 		ID:      id,
 		PID:     pid,
 		Command: cmd,
 		State:   "Running                 ",
 	}
-	m.nextId++
 	return id
 }
 
@@ -57,14 +58,20 @@ func (m *Manager) ReapJobs(t *term.Terminal) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
+	maxId := 0
+	for id := range m.jobs {
+		if id > maxId {
+			maxId = id
+		}
+	}
 	var curId, prevId int
-	for id := 1; id < m.nextId; id++ {
+	for id := 1; id < maxId; id++ {
 		if _, exists := m.jobs[id]; exists {
 			prevId = curId
 			curId = id
 		}
 	}
-	for i := 1; i < m.nextId; i++ {
+	for i := 1; i < maxId; i++ {
 		if job, exists := m.jobs[i]; exists {
 			if job.State == "Done                    " {
 				var sym string
@@ -93,14 +100,21 @@ func (m *Manager) ListJobs(t *term.Terminal) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
+	maxId := 0
+	for id := range m.jobs {
+		if id > maxId {
+			maxId = id
+		}
+	}
+
 	var curId, prevId int
-	for id := 1; id < m.nextId; id++ {
+	for id := 1; id < maxId; id++ {
 		if _, exists := m.jobs[id]; exists {
 			prevId = curId
 			curId = id
 		}
 	}
-	for i := 1; i < m.nextId; i++ {
+	for i := 1; i < maxId; i++ {
 		if job, exists := m.jobs[i]; exists {
 			var sym string
 			switch job.ID {
@@ -117,9 +131,9 @@ func (m *Manager) ListJobs(t *term.Terminal) {
 			}
 			fmt.Fprintf(t, "[%d]%s  %s%s\n", job.ID, sym, job.State, cmd)
 
-			if job.State == "Done                    " {
-				delete(m.jobs, i)
-			}
+			// if job.State == "Done                    " {
+			// 	delete(m.jobs, i)
+			// }
 		}
 	}
 }
