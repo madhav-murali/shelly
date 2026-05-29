@@ -65,13 +65,13 @@ func (m *Manager) ReapJobs(t *term.Terminal) {
 		}
 	}
 	var curId, prevId int
-	for id := 1; id < maxId; id++ {
+	for id := 1; id <= maxId; id++ {
 		if _, exists := m.jobs[id]; exists {
 			prevId = curId
 			curId = id
 		}
 	}
-	for i := 1; i < maxId; i++ {
+	for i := 1; i <= maxId; i++ {
 		if job, exists := m.jobs[i]; exists {
 			if job.State == "Done                    " {
 				var sym string
@@ -108,13 +108,13 @@ func (m *Manager) ListJobs(t *term.Terminal) {
 	}
 
 	var curId, prevId int
-	for id := 1; id < maxId; id++ {
+	for id := 1; id <= maxId; id++ {
 		if _, exists := m.jobs[id]; exists {
 			prevId = curId
 			curId = id
 		}
 	}
-	for i := 1; i < maxId; i++ {
+	for i := 1; i <= maxId; i++ {
 		if job, exists := m.jobs[i]; exists {
 			var sym string
 			switch job.ID {
@@ -131,9 +131,9 @@ func (m *Manager) ListJobs(t *term.Terminal) {
 			}
 			fmt.Fprintf(t, "[%d]%s  %s%s\n", job.ID, sym, job.State, cmd)
 
-			// if job.State == "Done                    " {
-			// 	delete(m.jobs, i)
-			// }
+			if job.State == "Done                    " {
+				delete(m.jobs, i)
+			}
 		}
 	}
 }
