@@ -2,10 +2,14 @@ package pipes
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 
+	"github.com/codecrafters-io/shell-starter-go/internal/builtins"
+	"github.com/codecrafters-io/shell-starter-go/internal/custom"
 	"github.com/codecrafters-io/shell-starter-go/internal/parser"
 )
 
@@ -53,5 +57,58 @@ func ExecutePipeline(parsedCmds [][]string) error {
 	for _, cmd := range cmds {
 		cmd.Wait()
 	}
+	return nil
+}
+
+func ExecPipeline(parserCmds [][]string, validCmds *custom.CmdSet) error {
+	var wg sync.WaitGroup
+
+	var prevReader io.Reader = os.Stdin
+	for i, args := range parserCmds {
+		isLast := i == len(parserCmds)-1
+
+		var nextWriter io.WriteCloser
+		var currentReader = prevReader
+
+		if isLast {
+			nextWriter = os.Stdout
+		} else {
+			pr, pw := io.Pipe()
+			nextWriter = pw
+			prevReader = pr
+		}
+
+		wg.Add(1)
+
+		go func(args []string, in io.Reader, out io.WriteCloser, isLast bool) error {
+			defer wg.Done()
+
+			if !isLast {
+				defer out.Close()
+			}
+
+			if closer, ok := in.(io.Closer); ok && in != os.Stdin {
+				defer closer.Close()
+			}
+
+			if validCmds.Find(strings.ToUpper(args[0])) {
+				builtins.ExecuteBuiltin(args, in, out, validCmds)
+				return nil
+			}
+			cmd := exec.Command(args[0], args[1:]...)
+			cmd.Stdin = in
+			cmd.Stdout = out
+			cmd.Stderr = os.Stderr
+
+			err := cmd.Run()
+			if err != nil {
+				//handle the error; outside too
+				return err
+			}
+			return nil
+		}(args, currentReader, nextWriter, isLast)
+	}
+
+	wg.Wait()
 	return nil
 }

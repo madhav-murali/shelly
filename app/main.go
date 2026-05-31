@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	auto "github.com/codecrafters-io/shell-starter-go/internal/autocomplete"
+	"github.com/codecrafters-io/shell-starter-go/internal/builtins"
 	customDS "github.com/codecrafters-io/shell-starter-go/internal/custom"
 	"github.com/codecrafters-io/shell-starter-go/internal/jobs"
 	parser "github.com/codecrafters-io/shell-starter-go/internal/parser"
@@ -187,7 +188,7 @@ func main() {
 			parsedCmds := pipes.ParseLineCmds(line)
 			term.Restore(int(os.Stdin.Fd()), oldState)
 
-			err := pipes.ExecutePipeline(parsedCmds)
+			err := pipes.ExecPipeline(parsedCmds, validCmds)
 			if err != nil {
 				fmt.Fprintf(t, "pipeline error : %v", err)
 			}
@@ -238,37 +239,11 @@ func main() {
 		// 	}
 		// 	fmt.Print("\n")
 		case "TYPE":
-			if validCmds.Find(strings.ToUpper(args[1])) {
-				fmt.Fprintf(t, "%s is a shell builtin\n", args[1])
-			} else {
-				path, err := exec.LookPath(args[1])
-				if err != nil {
-					fmt.Fprintf(t, "%s: not found\n", args[1])
-					break
-				}
-				fmt.Fprintf(t, "%s is %s\n", args[1], path)
-			}
+			builtins.Type(t, args, validCmds)
 		case "PWD":
-			dir, err := os.Getwd()
-			if err != nil {
-				fmt.Fprintln(t, "error: ", err)
-				break
-			}
-			fmt.Fprintln(t, dir)
+			builtins.PWD(t)
 		case "CD":
-			cd := args[1]
-			if cd == "~" {
-				cd, err = os.UserHomeDir()
-				if err != nil {
-					fmt.Fprintln(t, err)
-					break
-				}
-			}
-			err := os.Chdir(cd)
-			if err != nil {
-				fmt.Fprintf(t, "cd: %s: No such file or directory\n", args[1])
-				//break
-			}
+			builtins.CD(t, args)
 		case "JOBS":
 			jb.ListJobs(t)
 		default:
