@@ -12,6 +12,7 @@ import (
 	customDS "github.com/codecrafters-io/shell-starter-go/internal/custom"
 	"github.com/codecrafters-io/shell-starter-go/internal/jobs"
 	parser "github.com/codecrafters-io/shell-starter-go/internal/parser"
+	"github.com/codecrafters-io/shell-starter-go/internal/pipes"
 
 	"golang.org/x/term"
 )
@@ -170,7 +171,6 @@ func main() {
 	}
 
 	for {
-
 		jb.ReapJobs(t)
 		line, err := t.ReadLine()
 		if err != nil {
@@ -180,6 +180,18 @@ func main() {
 		line = strings.ReplaceAll(line, "\r", "")
 
 		if len(line) == 0 {
+			continue
+		}
+
+		if strings.Contains(line, "|") {
+			parsedCmds := pipes.ParseLineCmds(line)
+			term.Restore(int(os.Stdin.Fd()), oldState)
+
+			err := pipes.ExecutePipeline(parsedCmds)
+			if err != nil {
+				fmt.Fprintf(t, "pipeline error : %v", err)
+			}
+			oldState, _ = term.MakeRaw(int(os.Stdin.Fd()))
 			continue
 		}
 
